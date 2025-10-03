@@ -59,6 +59,9 @@ class Piece(Grid):
 
             [[0, 1],
              [1, 0]],
+            
+            [[1, 0],
+             [0, 1]],
 
             [[0, 1],
              [1, 1],
@@ -80,6 +83,12 @@ class Piece(Grid):
 
             [[1, 1],
              [0, 1]],
+            
+            [[1, 0],
+             [1, 1]],
+            
+            [[1, 1],
+             [1, 1]],
         ]
 
         shape = np.array(shapes[np.random.randint(len(shapes))], dtype=int)

@@ -3,7 +3,7 @@ from grid import Grid
 from piece import Piece
 from config import *
 from button import Button
-from gameLogic import clear_lines, can_place_piece, can_place_any
+from gameLogic import clear_lines, can_place_piece, can_place_any, generate_solvable_pieces
 
 pygame.init()
 
@@ -25,6 +25,40 @@ score = 0
 # Game state
 game_over = False
 reset_button = Button(WIDTH//2 - 80, 400, 160, 40, "RESET", font)
+def draw_game_over(surface, font, game_over_font, reset_button, score, board, pieces):
+    """Draw Game Over screen and handle reset button."""
+    global game_over  # use the outer variable
+
+    # Draw green bordered box
+    box_width, box_height = 400, 120
+    box_x = WIDTH // 2 - box_width // 2
+    box_y = HEIGHT // 2 - box_height // 2
+    box_rect = pygame.Rect(box_x, box_y, box_width, box_height)
+    pygame.draw.rect(surface, (0, 0, 0), box_rect)      # background
+    pygame.draw.rect(surface, (0, 255, 0), box_rect, 3) # border
+
+    # Title text
+    text_surface = game_over_font.render("GAME OVER", True, (0, 255, 0))
+    surface.blit(text_surface, (
+        box_x + box_width // 2 - text_surface.get_width() // 2,
+        box_y + 30
+    ))
+
+    # Draw reset button
+    reset_button.draw(surface)
+
+    # Handle click
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            return False, board, pieces, score, True
+        if reset_button.is_clicked(event):
+            board.clear()
+            pieces = generate_pieces()
+            score = 0
+            game_over = False
+            return True, board, pieces, score, False
+
+    return True, board, pieces, score, game_over
 
 # ---------------- Helpers ----------------
 def generate_pieces():
@@ -35,7 +69,7 @@ def generate_pieces():
         new_pieces.append(p)
     return new_pieces
 
-pieces = generate_pieces()
+pieces = generate_solvable_pieces(board)
 dragging = None 
 
 # ---------------- Main Loop ----------------
@@ -141,20 +175,9 @@ while running:
     # Game Over state
     if game_over:
         # Draw green bordered box
-        box_width, box_height = 400, 120
-        box_x = WIDTH//2 - box_width//2
-        box_y = HEIGHT//2 - box_height//2
-        box_rect = pygame.Rect(box_x, box_y, box_width, box_height)
-        pygame.draw.rect(screen, (0, 0, 0), box_rect)      # background
-        pygame.draw.rect(screen, (0, 255, 0), box_rect, 3) # border
-
-        # Title text
-        text_surface = game_over_font.render("GAME OVER", True, (0, 255, 0))
-        screen.blit(text_surface, (box_x + box_width//2 - text_surface.get_width()//2,
-                                   box_y + 30))
-
-        # Draw reset button
-        reset_button.draw(screen)
+        running, board, pieces, score, game_over = draw_game_over(
+        screen, font, game_over_font, reset_button, score, board, pieces
+        )
 
     pygame.display.flip()
     clock.tick(60)
